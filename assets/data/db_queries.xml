@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <tables>
+        <table name="anime">
+            <schema>
+				<col name="id" type ="INTEGER PRIMARY KEY AUTOINCREMENT" />
+                <col name="title" type ="TEXT" />
+                <col name="description" type ="TEXT" />
+                <col name="episodes" type ="INTEGER" />
+            </schema>
+        </table>
+    </tables>
+    <scripts>
+        <method name="anime">
+            <query name="create" caption="Creating Anime Table">
+                CREATE TABLE IF NOT EXISTS ? (
+                    "id" INTEGER NOT NULL,
+                    "title" TEXT NOT NULL,
+                    "description" TEXT NOT NULL,
+                    "episodes" INTEGER NOT NULL,
+                    PRIMARY KEY("id" AUTOINCREMENT)
+                );
+            </query>
+            <query name="checkDuplicate" caption="Checking Data Duplicates">
+				SELECT COUNT(*) FROM anime WHERE title = ?
+			</query>
+            <query name="insert" caption="Inserting Data to anime">
+				INSERT INTO anime (title, description, episodes) VALUES (?,?,?)
+			</query>
+            <query name="update" caption="Updating Data to anime">
+                UPDATE anime SET title = ?, description = ?, episodes = ? WHERE id = ?
+            </query>
+            <query name="deleteAll" caption="Deleting Data to anime">
+                DELETE FROM anime
+            </query>
+            <query name="delete" caption="Deleting Data to anime">
+                DELETE FROM anime WHERE id = ?
+            </query>
+            <query name="selectAll" caption="Selecting all Data from anime sorted by Title">
+				SELECT * from anime ORDER BY title
+			</query>
+            <query name="select" caption="Selecting a Row from anime">
+				SELECT * from anime WHERE id = ?
+			</query>
+        </method>
+    </scripts>
+</root>

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:animain/view/homePage.dart';
+import 'package:animain/view/home_page.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
+String appTitle = 'Animain';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,7 +19,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const HomePage(title: 'Anime'),
+      home: HomePage(title: appTitle),
     );
   }
 }
