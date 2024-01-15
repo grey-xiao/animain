@@ -27,13 +27,23 @@ class AnimeController {
     return queries[query]!;
     //return queries.values.firstWhere((element) => element!.contains(query)).toString();
   }
-
   Future<void> createTable(Database database) async {
-      await database.execute(
-        loadQuery('create'),
-        [tableName]
+    await database.execute(
+      """CREATE TABLE IF NOT EXISTS $tableName (
+        "id" INTEGER NOT NULL,
+        "title" TEXT NOT NULL,
+        "description" TEXT NOT NULL,
+        "episodes" INTEGER NOT NULL,
+        PRIMARY KEY("id" AUTOINCREMENT)
+      );"""
     );
   }
+
+  // Future<void> createTable(Database database) async {
+  //     await database.execute(
+  //       loadQuery('create')
+  //   );
+  // }
 
   Future<int> insert({required String title, required String description, required int episodes}) async {
     bool notDuplicate = await checkDuplicate(title);
