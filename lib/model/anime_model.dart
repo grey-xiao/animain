@@ -1,11 +1,13 @@
-class Anime{
-  final int id;
+import 'package:equatable/equatable.dart';
+
+class Anime extends Equatable{
+  final int? id;
   final String title;
   final String description;
   final int episodes;
 
-   Anime({
-    required this.id,
+  const Anime({
+    this.id,
     required this.title,
     required this.description,
     required this.episodes,
@@ -31,4 +33,9 @@ class Anime{
   String toString() {
     return 'Anime{id: $id, title: $title, description: $description, episodes: $episodes}';
   }
+
+  @override
+  List<Object?> get props => [id, title, description, episodes];
+
+  static List<Anime> animes = [];
 }

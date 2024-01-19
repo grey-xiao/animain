@@ -22,25 +22,25 @@
                     PRIMARY KEY("id" AUTOINCREMENT)
                 );
             </query>
-            <query name="checkDuplicate" caption="Checking Data Duplicates">
+            <query name="checkDuplicate" caption="Checking Data Duplicates" arguments="title">
 				SELECT COUNT(*) FROM anime WHERE title = ?
 			</query>
-            <query name="insert" caption="Inserting Data to anime">
+            <query name="insert" caption="Inserting Data to anime" arguments="title, description, episodes">
 				INSERT INTO anime (title, description, episodes) VALUES (?,?,?)
 			</query>
-            <query name="update" caption="Updating Data to anime">
+            <query name="update" caption="Updating Data to anime" arguments="id, title, description, episodes">
                 UPDATE anime SET title = ?, description = ?, episodes = ? WHERE id = ?
             </query>
-            <query name="deleteAll" caption="Deleting Data to anime">
+            <query name="deleteAll" caption="Deleting Data to anime" arguments="">
                 DELETE FROM anime
             </query>
-            <query name="delete" caption="Deleting Data to anime">
+            <query name="delete" caption="Deleting Data to anime" arguments="id">
                 DELETE FROM anime WHERE id = ?
             </query>
-            <query name="selectAll" caption="Selecting all Data from anime sorted by Title">
+            <query name="selectAll" caption="Selecting all Data from anime sorted by Title" arguments="">
 				SELECT * from anime ORDER BY title
 			</query>
-            <query name="select" caption="Selecting a Row from anime">
+            <query name="select" caption="Selecting a Row from anime" arguments="id">
 				SELECT * from anime WHERE id = ?
 			</query>
         </method>

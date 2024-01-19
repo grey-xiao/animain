@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:animain/controller/anime_controller.dart';
+import 'package:animain/controller/xml_query_controller.dart';
 import 'package:animain/model/anime_model.dart';
+import 'package:animain/util/strings.dart';
+import 'package:animain/view/dialogs/delete_dialog.dart';
 import 'package:animain/view/forms/anime_form.dart';
 import 'package:flutter/material.dart';
 
@@ -20,14 +23,11 @@ class _AnimePageState extends State<AnimePage> {
   Anime updatedAnime =  Anime(id: 0, title: '', description: '', episodes: 0);
   Anime displayedAnime = Anime(id: 0, title: '', description: '', episodes: 0);
   final animeDB = AnimeController();
-  
-
+  final xmlQuery = XMLQuery();
   final _globalKey = GlobalKey<ScaffoldMessengerState>();
-
-
+  
   @override
   void initState() {
-    animeDB.getQueriesFromXML(context);
     setState(() {
       displayedAnime = widget.anime;
     });
@@ -36,7 +36,8 @@ class _AnimePageState extends State<AnimePage> {
   }
 
   Future fetchAnime() async {
-    updatedAnime = await animeDB.fetchById(displayedAnime.id);
+    animeDB.queries = await xmlQuery.getQueriesFromXML(context);
+    updatedAnime = await animeDB.fetchById(displayedAnime.id!);
     setState(() {
       displayedAnime = updatedAnime;
     });
@@ -47,17 +48,11 @@ class _AnimePageState extends State<AnimePage> {
   }
 
   showMessage(int result){
-    const successMsg = SnackBar(
-      content: Text('Success.'),
+    SnackBar msg = SnackBar(
+      content: Text(result != 0 ? successMsgString : dupeMsgString),
       showCloseIcon: true,
     );
-    const failedMsg = SnackBar(
-        content: Text('That title already exists!'),
-        showCloseIcon: true,
-      );
-    return result == 1 
-      ? _globalKey.currentState!.showSnackBar(successMsg)
-      : _globalKey.currentState!.showSnackBar(failedMsg);
+    return _globalKey.currentState?.showSnackBar(msg);
   }
 
 
@@ -70,7 +65,7 @@ class _AnimePageState extends State<AnimePage> {
         callback: callback,
         onSubmit: (animeUsed) async {
           success = await animeDB.update(
-            id: anime.id,
+            id: anime.id!,
             title: animeUsed[0], 
             description: animeUsed[1], 
             episodes: int.parse(animeUsed[2]),
@@ -82,61 +77,11 @@ class _AnimePageState extends State<AnimePage> {
        },
       ),
     );
-    
-    
-     
   }
 
   showDeletePrompt(BuildContext context, Anime anime, VoidCallback callback) async {
     showDialog(context: context, builder: (context){
-      return AlertDialog(
-        actionsAlignment: MainAxisAlignment.spaceEvenly,
-        actions: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: const Text("Cancel",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-            
-            )
-          ),
-          GestureDetector(
-            onTap: () async {
-              await animeDB.delete(anime.id);
-              callback();
-              // Navigator.of(context).pop();
-              // Navigator.of(context).pop();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            } ,
-            child: const Text("DELETE",
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-            )
-          ),
-        ],
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(
-                  20.0,
-                ),
-              ),
-            ),
-            contentPadding: const EdgeInsets.only(
-              top: 10.0,
-            ),
-            title: Center(
-              child: Text(
-                "Delete ${anime.title}?",
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 20.0),
-              ),
-            ),
-          );
+      return DeleteDialog(anime: anime, animeDB: animeDB, callback: callback, mode: 'single', onSubmit:(value) {},); 
     });
   }
 
@@ -153,7 +98,6 @@ class _AnimePageState extends State<AnimePage> {
           }
         );
       Timer(const Duration(milliseconds: 200), (){
-        
         //Fetch Data before Render Refresh
         fetchAnime();
         //Render Refresh
@@ -205,11 +149,6 @@ class _AnimePageState extends State<AnimePage> {
                 ),
               ]
             ),
-            // IconButton(icon: Icon(Icons.more_vert_rounded, size: 24,),
-            //   onPressed: () {
-                
-            //   },
-            // ),
           ],
         ),
         body: SafeArea(
@@ -223,44 +162,49 @@ class _AnimePageState extends State<AnimePage> {
                 }
                 else{
                   if(snapshot.hasData){
-                    return Column(
-                      children: <Widget>[
-                        Center(
-                          child: Text(displayedAnime.title,
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w500,
+                    return RefreshIndicator(
+                      onRefresh: fetchAnime,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: <Widget>[
+                            Center(
+                              child: Text(displayedAnime.title,
+                                style: const TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          ),
+                            Text("${displayedAnime.episodes} episodes",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            const SizedBox(height: 16,),
+                            Text(displayedAnime.description,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text("${displayedAnime.episodes} episodes",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 16,),
-                        Text(displayedAnime.description,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                      ),
                     );
                   }
                   else {
-                      return const Center(
-                        child: Text(
-                          'No Data',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
-                          ),
+                    return const Center(
+                      child: Text(
+                        'No Data',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
                         ),
-                      );
-                    }
+                      ),
+                    );
+                  }
                 }
               }
             ),

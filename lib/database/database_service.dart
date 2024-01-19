@@ -1,4 +1,4 @@
-import 'package:animain/controller/anime_controller.dart';
+import 'package:animain/util/strings.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -15,7 +15,7 @@ class DatabaseService {
   }
 
   Future<String> get fullPath async {
-    const name = 'animain.db';
+    const name = databaseNameString;
     final path = await getDatabasesPath();
     return join(path, name);
   }
@@ -32,5 +32,13 @@ class DatabaseService {
   }
 
   Future<void> create(Database database, int version) async =>
-    await AnimeController().createTable(database);
+    await database.execute(
+      """CREATE TABLE IF NOT EXISTS $tableNameString (
+        "id" INTEGER NOT NULL,
+        "title" TEXT NOT NULL,
+        "description" TEXT NOT NULL,
+        "episodes" INTEGER NOT NULL,
+        PRIMARY KEY("id" AUTOINCREMENT)
+      );"""
+    );
 }

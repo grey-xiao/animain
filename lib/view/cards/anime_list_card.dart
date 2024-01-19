@@ -2,6 +2,7 @@
 import 'package:animain/controller/anime_controller.dart';
 import 'package:animain/model/anime_model.dart';
 import 'package:animain/view/anime_page.dart';
+import 'package:animain/view/dialogs/delete_dialog.dart';
 //import 'package:animain/view/homePage.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +16,6 @@ class AnimeListCard extends StatelessWidget{
 
     @override
     Widget build(BuildContext context){
-
       return Container(
         decoration: const BoxDecoration(
         ),
@@ -81,53 +81,7 @@ class AnimeListCard extends StatelessWidget{
     }
   void showDeletePrompt(BuildContext context, VoidCallback callback, Anime anime){
     showDialog(context: context, builder: (context){
-      return AlertDialog(
-        actionsAlignment: MainAxisAlignment.spaceEvenly,
-        actions: [
-          //No Button
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: const Text("Cancel",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-            
-            )
-          ),
-          GestureDetector(
-            onTap: () async {
-              await animeDB.delete(anime.id);
-              Navigator.of(context).pop();
-              callback();
-            } ,
-            child: const Text("DELETE",
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-            )
-          ),
-        ],
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(
-                  20.0,
-                ),
-              ),
-            ),
-            contentPadding: const EdgeInsets.only(
-              top: 10.0,
-            ),
-            title: Center(
-              child: Text(
-                "Delete ${anime.title}?",
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 20.0),
-              ),
-            ),
-          );
+      return DeleteDialog(anime: anime, animeDB: animeDB, callback: callback, mode: 'single', onSubmit: (value) {},);
     });
   }
 }
