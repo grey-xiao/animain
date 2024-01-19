@@ -5,7 +5,15 @@ import 'package:animain/util/strings.dart';
 
 
 class AnimeController {
-  Map<String?, String?> queries = {};
+  Map<String?, String?> queries = {
+    'insert': '''INSERT INTO anime (title, description, episodes) VALUES (?,?,?)''',
+  'selectAll': '''SELECT * from anime ORDER BY title''',
+  'select': '''SELECT * from anime WHERE id = ?''',
+  'checkDuplicate': '''SELECT COUNT(*) FROM anime WHERE title = ?''',
+  'update': '''UPDATE anime SET title = ?, description = ?, episodes = ? WHERE id = ?''',
+  'delete': '''DELETE FROM anime WHERE id = ?''',
+  'deleteAll': '''DELETE FROM anime'''
+  };
 
   String loadQuery(String query){
     return queries[query]!;

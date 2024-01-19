@@ -15,5 +15,6 @@ class XMLQuery {
       queries.addEntries(item.entries);
     }
     return  queries;
+    
   }
 }

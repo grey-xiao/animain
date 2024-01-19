@@ -32,17 +32,23 @@ class _HomePageState extends State<HomePage> {
   MaterialColor deleteButtonColor = Colors.red;
   final TextEditingController _searchController = TextEditingController();
 
-  Future<List<Anime>> futureAnimeList() async {
-    return viewableList;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAnimeList();
+    context.read<AnimeBloc>().add(LoadAnimeList());
+    
+    
   }
 
   Future fetchAnimeList() async {
     animeDB.queries = await xmlQuery.getQueriesFromXML(context);
-    aniList = await animeDB.fetchAll();
-    setState(() {
-      viewableList = aniList;
-      noDataCheck(viewableList);
-    });
+    // aniList = await animeDB.fetchAll();
+    // setState(() {
+    //   viewableList = aniList;
+    //   noDataCheck(viewableList);
+    // });
   }
 
   void noDataCheck(List<Anime> list) {
@@ -59,19 +65,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  @override
-  void initState() {
-    fetchAnimeList();
-    super.initState();
-  }
-
-  // showMessage(int result) {
-  //   SnackBar msg = SnackBar(
-  //     content: Text(result != 0 ? successMsgString : dupeMsgString),
-  //     showCloseIcon: true,
-  //   );
-  //   return _globalKey.currentState?.showSnackBar(msg);
-  // }
+  
 
   Future onSearchTextChanged(String text) async {
     setState(() {
@@ -123,7 +117,7 @@ class _HomePageState extends State<HomePage> {
           //context.read<AnimeBloc>().add();
           //showMessage(success);
           //Navigator.of(context).pop();
-          fetchAnimeList();
+          //fetchAnimeList();
           if (!mounted) return;
         },
       ),
@@ -133,23 +127,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     void refresh() {
-      showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (context) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          });
-      Timer(const Duration(milliseconds: 200), () {
-        //Fetch Data before Render Refresh
-        fetchAnimeList();
-        //Render Refresh
-        setState(() {
-          //print("Page Updated");
-        });
-      });
-      Navigator.of(context).pop();
+      AnimeBloc().add(LoadAnimeList());
     }
 
     return Scaffold(
@@ -233,92 +211,66 @@ class _HomePageState extends State<HomePage> {
           if(state is AnimeLoading) {
             return const CircularProgressIndicator();
           }
-          if(state is AnimeLoaded){
+          if(state is AnimeListLoaded){
+            List<Anime> animeList = state.animes;
             return SafeArea(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    FutureBuilder(
-                      future: futureAnimeList(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else {
-                          if (snapshot.hasData) {
-                            final animeList = snapshot.data!;
-    
-                            return animeList.isEmpty
-                                ? const Center(
-                                    child: Text(
-                                      'No Data',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  )
-                                : SizedBox(
-                                    height:
-                                        MediaQuery.of(context).size.height *
-                                            4 /
-                                            5,
-                                    child: RefreshIndicator(
-                                      onRefresh: fetchAnimeList,
-                                      child: ListView.builder(
-                                        controller: _controller,
-                                        padding: const EdgeInsets.symmetric(vertical: 8),
-                                        scrollDirection: Axis.vertical,
-                                        shrinkWrap: true,
-                                        itemCount: state.animes.length,
-                                        itemBuilder: (context, index) {
-                                          final Anime anime = state.animes[index];
-                                          //final Anime anime = animeList[index];
-                                          return Dismissible(
-                                            key: Key(anime.title),
-                                            confirmDismiss: (direction) => showDeletePrompt(
-                                              context, anime, refresh, 'single'),
-                                              onDismissed: (direction) {},
-                                              background: Container(
-                                              color: Colors.redAccent,
-                                            ),
-                                            child: Container(
-                                              padding: const EdgeInsets.only(bottom: 8.0),
-                                              decoration: const BoxDecoration(
-                                                border: BorderDirectional(
-                                                  bottom: BorderSide()
-                                                )
-                                              ),
-                                              child: AnimeListCard(
-                                                parentContext: context,
-                                                anime: anime,
-                                                callback: refresh,
-                                                animeDB: animeDB,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  );
-                          } else {
-                            return const Center(
-                              child: Text(
-                                'No Data',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey,
+                    animeList.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No Data',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                    : SizedBox(
+                        height:
+                            MediaQuery.of(context).size.height *
+                                4 /
+                                5,
+                        //child: RefreshIndicator(
+                          //onRefresh: AnimeBloc().add(LoadAnimeList()),
+                          child: ListView.builder(
+                            controller: _controller,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: state.animes.length,
+                            itemBuilder: (context, index) {
+                              final Anime anime = state.animes[index];
+                              //final Anime anime = animeList[index];
+                              return Dismissible(
+                                key: Key(anime.title),
+                                confirmDismiss: (direction) => showDeletePrompt(
+                                  context, anime, refresh, 'single'),
+                                  onDismissed: (direction) {},
+                                  background: Container(
+                                  color: Colors.redAccent,
                                 ),
-                              ),
-                            );
-                          }
-                        }
-                      }
-                    ),
+                                child: Container(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  decoration: const BoxDecoration(
+                                    border: BorderDirectional(
+                                      bottom: BorderSide()
+                                    )
+                                  ),
+                                  child: AnimeListCard(
+                                    parentContext: context,
+                                    anime: anime,
+                                    callback: refresh,
+                                    animeDB: animeDB,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      //)
                   ],
                 ),
               ),

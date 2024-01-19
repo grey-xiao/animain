@@ -9,12 +9,21 @@ sealed class AnimeState extends Equatable {
 
 final class AnimeLoading extends AnimeState {}
 
-class AnimeLoaded extends AnimeState {
+class AnimeListLoaded extends AnimeState {
   final List<Anime> animes;
   
-  const AnimeLoaded({this.animes = const <Anime>[]});
+  const AnimeListLoaded({required this.animes});
 
   @override
   List<Object> get props => [animes];
+}
+
+class AnimeLoaded extends AnimeState {
+  final Anime anime;
+  
+  const AnimeLoaded({required this.anime});
+
+  @override
+  List<Object> get props => [anime];
 }
 

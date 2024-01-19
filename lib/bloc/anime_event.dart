@@ -7,31 +7,47 @@ sealed class AnimeEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadAnime extends AnimeEvent {
-  final List<Anime> animes;
+class LoadAnimeList extends AnimeEvent {
+  //final List<Anime> animes;
 
-  const LoadAnime({this.animes = const <Anime>[]});
 
-  @override
-  List<Object> get props => [animes];
+  //LoadAnimeList({this.animes = const <Anime>[]});
+
+  //@override
+  //List<Object> get props => [animes];
 }
 
-class AddAnime extends AnimeEvent {
-  final Anime anime;
+class LoadAnime extends AnimeEvent {
+  final int id;
 
-  const AddAnime({required this.anime});
+  const LoadAnime({required this.id});
 
   @override
-  List<Object> get props => [anime];
+  List<Object> get props => [id];
+}
+
+
+class AddAnime extends AnimeEvent {
+  final String title;
+  final String description;
+  final int episodes;
+
+  const AddAnime({required this.title, required this.description, required this.episodes});
+
+  @override
+  List<Object> get props => [title, description, episodes];
 }
 
 class UpdateAnime extends AnimeEvent {
-  final Anime anime;
+  final int id;
+  final String title;
+  final String description;
+  final int episodes;
 
-  const UpdateAnime({required this.anime});
+  const UpdateAnime({required this.id, required this.title, required this.description, required this.episodes});
 
   @override
-  List<Object> get props => [anime];
+  List<Object> get props => [id, title, description, episodes];
 }
 
 class DeleteAnime extends AnimeEvent {

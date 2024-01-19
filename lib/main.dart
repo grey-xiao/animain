@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => AnimeBloc()..add(LoadAnime()),
+          create: (context) => AnimeBloc()..add(LoadAnimeList()),
         ),
       ],
       child: MaterialApp(
