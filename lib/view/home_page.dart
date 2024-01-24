@@ -5,7 +5,8 @@ import 'package:animain/util/strings.dart';
 import 'package:animain/view/cards/anime_list_card.dart';
 import 'package:animain/model/anime_model.dart';
 import 'package:animain/view/dialogs/delete_dialog.dart';
-import 'package:animain/view/forms/anime_form.dart';
+import 'package:animain/view/forms/add_anime_form.dart';
+import 'package:animain/view/forms/edit_anime_form.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -33,6 +34,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AnimeBloc().add(LoadAnimeList());
+    });
     //context.read<AnimeBloc>().add(LoadAnimeList());
   }
 
@@ -69,25 +73,27 @@ class _HomePageState extends State<HomePage> {
       VoidCallback callback, String mode) async {
     bool decision = false;
     await showDialog(
-        context: context,
-        builder: (context) {
-          return DeleteDialog(
-              anime: anime,
-              callback: callback,
-              mode: mode,
-              onSubmit: (value) {
-                if (mode == 'single') {
-                  value ? decision = true : decision = false;
-                }
-              });
-        });
+      context: context,
+      builder: (context) {
+        return DeleteDialog(
+          anime: anime,
+          callback: callback,
+          mode: mode,
+          onSubmit: (value) {
+            if (mode == 'single') {
+              value ? decision = true : decision = false;
+            }
+          }
+        );
+      }
+    );
     return decision;
   }
 
   Future<void> showAddForm(BuildContext context, VoidCallback callback) async {
     showDialog(
       context: context,
-      builder: (_) => AnimeForm(
+      builder: (_) => AddAnimeForm(
         callback: callback,
       ),
     );
@@ -184,9 +190,11 @@ class _HomePageState extends State<HomePage> {
                             color: deleteButtonColor,
                             size: 24,
                           ),
-                          onPressed: noData
-                              ? null
-                              : () {
+                          onPressed: 
+                          // noData
+                          //     ? null
+                          //     : 
+                              () {
                                   showDeletePrompt(
                                       context, null, refresh, 'all');
                                 },
@@ -208,61 +216,61 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           children: [
                             animeList.isEmpty
-                                ? const Center(
-                                    child: Text(
-                                      'No Data',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  )
-                                : SizedBox(
-                                    height: MediaQuery.of(context).size.height *
-                                        4 /
-                                        5,
-                                    // child: RefreshIndicator(
-                                    // onRefresh: () {
-                                    //   final animeBloc = BlocProvider.of<AnimeBloc>(context)..add(AnimeRefresh());
-                                    //   return animeBloc.firstWhere((e) => e is! AnimeRefresh);
-                                    // },
-                                    child: ListView.builder(
-                                      controller: _controller,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8),
-                                      scrollDirection: Axis.vertical,
-                                      shrinkWrap: true,
-                                      itemCount: state.animes.length,
-                                      itemBuilder: (context, index) {
-                                        final Anime anime = state.animes[index];
-                                        //final Anime anime = animeList[index];
-                                        return Dismissible(
-                                          key: Key(anime.title),
-                                          confirmDismiss: (direction) =>
-                                              showDeletePrompt(context, anime,
-                                                  refresh, 'single'),
-                                          onDismissed: (direction) {},
-                                          background: Container(
-                                            color: Colors.redAccent,
-                                          ),
-                                          child: Container(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 8.0),
-                                            decoration: const BoxDecoration(
-                                                border: BorderDirectional(
-                                                    bottom: BorderSide())),
-                                            child: AnimeListCard(
-                                              parentContext: context,
-                                              anime: anime,
-                                              callback: refresh,
-                                              animeDB: animeDB,
-                                            ),
-                                          ),
-                                        );
-                                      },
+                              ? const Center(
+                                  child: Text(
+                                    'No Data',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey,
                                     ),
                                   ),
+                                )
+                              : SizedBox(
+                                  height: MediaQuery.of(context).size.height *
+                                      4 /
+                                      5,
+                                  // child: RefreshIndicator(
+                                  // onRefresh: () {
+                                  //   final animeBloc = BlocProvider.of<AnimeBloc>(context)..add(AnimeRefresh());
+                                  //   return animeBloc.firstWhere((e) => e is! AnimeRefresh);
+                                  // },
+                                  child: ListView.builder(
+                                    controller: _controller,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8),
+                                    scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
+                                    itemCount: state.animes.length,
+                                    itemBuilder: (context, index) {
+                                      final Anime anime = state.animes[index];
+                                      //final Anime anime = animeList[index];
+                                      return Dismissible(
+                                        key: Key(anime.title),
+                                        confirmDismiss: (direction) =>
+                                            showDeletePrompt(context, anime,
+                                                refresh, 'single'),
+                                        onDismissed: (direction) {},
+                                        background: Container(
+                                          color: Colors.redAccent,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          decoration: const BoxDecoration(
+                                              border: BorderDirectional(
+                                                  bottom: BorderSide())),
+                                          child: AnimeListCard(
+                                            parentContext: context,
+                                            anime: anime,
+                                            callback: refresh,
+                                            animeDB: animeDB,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                             //)
                           ],
                         ),

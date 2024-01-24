@@ -5,19 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AnimeForm extends StatefulWidget {
-  const AnimeForm(
-      {super.key, this.anime, required this.onSubmit, required this.callback});
+class AddAnimeForm extends StatefulWidget {
+  const AddAnimeForm(
+      {super.key, this.anime, required this.callback});
 
   final Anime? anime;
-  final ValueChanged<List<String>> onSubmit;
   final VoidCallback callback;
 
   @override
-  State<AnimeForm> createState() => _AnimeFormState();
+  State<AddAnimeForm> createState() => _AddAnimeFormState();
 }
 
-class _AnimeFormState extends State<AnimeForm> {
+class _AddAnimeFormState extends State<AddAnimeForm> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _epsController = TextEditingController();
@@ -27,37 +26,28 @@ class _AnimeFormState extends State<AnimeForm> {
   @override
   void initState() {
     super.initState();
-
-    _titleController.text = widget.anime?.title ?? '';
-    _descController.text = widget.anime?.description ?? '';
-    _epsController.text = widget.anime?.episodes.toString() ?? '';
   }
 
-  void cleanForm() {
-    _titleController.clear();
-    _descController.clear();
-    _epsController.clear();
-  }
+  // void cleanForm() {
+  //   _titleController.clear();
+  //   _descController.clear();
+  //   _epsController.clear();
+  // }
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.anime != null;
     return BlocProvider(
-      create: (context) => AnimeBloc()..add(LoadAnime(id: widget.anime!.id!)),
+      create: (_) => AnimeBloc()..add(LoadAnimeList()),
       child: BlocListener<AnimeBloc, AnimeState>(
         listener: (context, state) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(successMsgString),
             showCloseIcon: true,
           ));
-
-          if (state is AnimeLoaded) {
-            animeUsed = state.anime;
-          }
         },
         child: BlocBuilder<AnimeBloc, AnimeState>(
           builder: (context, state) {
-            if (state is AnimeLoaded) {
+            if (state is AnimeListLoaded) {
               return AlertDialog(
                 insetPadding: const EdgeInsets.all(24),
                 contentPadding: EdgeInsets.zero,
@@ -77,29 +67,18 @@ class _AnimeFormState extends State<AnimeForm> {
                     onPressed: () {
                       if (formField.currentState!.validate()) {
                         var anime = Anime(
-                            title: _titleController.value.text,
-                            description: _descController.value.text,
-                            episodes: int.parse(_epsController.value.text));
+                          title: _titleController.value.text,
+                          description: _descController.value.text,
+                          episodes: int.parse(_epsController.value.text)
+                        );
                         print('ANIME ID: ${animeUsed.id}');
-                        isEditing
-                            ? context.read<AnimeBloc>().add(UpdateAnime(
-                                id: state.anime.id!,
-                                title: anime.title,
-                                description: anime.description,
-                                episodes: anime.episodes))
-                                
-
-                            : context.read<AnimeBloc>().add(AddAnime(
-                                title: anime.title,
-                                description: anime.description,
-                                episodes: anime.episodes));
-                      
-                        
-                        widget.onSubmit([
-                          _titleController.text,
-                          _descController.text,
-                          _epsController.text,
-                        ]);
+                        context.read<AnimeBloc>().add(
+                          AddAnime(
+                            title: anime.title,
+                            description: anime.description,
+                            episodes: anime.episodes
+                          )
+                        );
                         widget.callback();
                         Navigator.of(context).pop();
                       }
@@ -115,7 +94,7 @@ class _AnimeFormState extends State<AnimeForm> {
                   ),
                 ],
                 title: Text(
-                  isEditing ? 'Edit ${widget.anime?.title}' : 'Add New Anime',
+                  'Add New Anime',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w400,

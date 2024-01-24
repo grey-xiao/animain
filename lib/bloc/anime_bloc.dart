@@ -33,6 +33,7 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
         AnimeListLoaded(animes: animes)
       );
     }
+    
     void _onSearchAnime(SearchAnime event, Emitter<AnimeState> emit) async {
       final state = this.state;
 
@@ -58,21 +59,22 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
     void _onAddAnime(AddAnime event, Emitter<AnimeState> emit) async {
       await AnimeController().insert(title: event.title, description: event.description, episodes: event.episodes);
       //Anime anime = rawList.firstWhere((element) => element.title == event.title);
-      animes = await AnimeController().fetchAll();
-      Anime anime = animes.firstWhere((element) => element.title == event.title);
-      print(anime);
+
+      final animes = await AnimeController().fetchAll();
+      //Anime anime = animes.firstWhere((element) => element.title == event.title);
+      //print(anime);
       final state = this.state;
-      emit(AnimeLoading());
-      emit(AnimeLoaded(anime: anime));
+      //emit(AnimeLoading());
+      //emit(AnimeLoaded(anime: anime));
       //emit(AnimeListLoaded(animes: animes));
       if(state is AnimeListLoaded){
-        // animes = rawList.where(
+        // animes = animes.where(
         //   (anime) {
         //     return anime.title == event.title;
         //   }
         // ).toList();
-
-        //emit(AnimeListLoaded(animes: List.from(state.animes)..add(anime)));
+        emit(AnimeListLoaded(animes: animes));
+        print(animes);
         print('ANIMELISTLOADED STATE');
       }
       else{

@@ -4,7 +4,7 @@ import 'package:animain/bloc/anime_bloc.dart';
 import 'package:animain/model/anime_model.dart';
 import 'package:animain/util/strings.dart';
 import 'package:animain/view/dialogs/delete_dialog.dart';
-import 'package:animain/view/forms/anime_form.dart';
+import 'package:animain/view/forms/edit_anime_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -55,7 +55,7 @@ class _AnimePageState extends State<AnimePage> {
       BuildContext context, Anime anime, VoidCallback callback) async {
     showDialog(
       context: context,
-      builder: (_) => AnimeForm(
+      builder: (_) => EditAnimeForm(
         anime: anime,
         callback: callback,
       ),
