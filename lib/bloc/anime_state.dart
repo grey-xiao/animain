@@ -1,6 +1,6 @@
 part of 'anime_bloc.dart';
 
-sealed class AnimeState extends Equatable {
+abstract class AnimeState extends Equatable {
   const AnimeState();
   
   @override
@@ -17,6 +17,14 @@ class AnimeListLoaded extends AnimeState {
   @override
   List<Object> get props => [animes];
 }
+class AnimeSearchLoaded extends AnimeState {
+  final List<Anime> animes;
+  
+  const AnimeSearchLoaded({required this.animes});
+
+  @override
+  List<Object> get props => [animes];
+}
 
 class AnimeLoaded extends AnimeState {
   final Anime anime;
@@ -27,3 +35,7 @@ class AnimeLoaded extends AnimeState {
   List<Object> get props => [anime];
 }
 
+
+class AnimeRefreshing extends AnimeState {
+  
+}

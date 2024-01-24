@@ -1,6 +1,6 @@
 part of 'anime_bloc.dart';
 
-sealed class AnimeEvent extends Equatable {
+abstract class AnimeEvent extends Equatable {
   const AnimeEvent();
 
   @override
@@ -8,22 +8,22 @@ sealed class AnimeEvent extends Equatable {
 }
 
 class LoadAnimeList extends AnimeEvent {
-  //final List<Anime> animes;
+  final List<Anime>? animes;
 
 
-  //LoadAnimeList({this.animes = const <Anime>[]});
+  const LoadAnimeList({this.animes});
 
-  //@override
-  //List<Object> get props => [animes];
+  @override
+  List<Object> get props => [animes!];
 }
 
 class LoadAnime extends AnimeEvent {
-  final int id;
+  final int? id;
 
-  const LoadAnime({required this.id});
+  const LoadAnime({ this.id});
 
   @override
-  List<Object> get props => [id];
+  List<Object> get props => [id!];
 }
 
 
@@ -57,4 +57,24 @@ class DeleteAnime extends AnimeEvent {
 
   @override
   List<Object> get props => [anime];
+}
+
+class DeleteAll extends AnimeEvent {
+  final List<Anime> animes;
+
+  const DeleteAll({this.animes = const <Anime>[]});
+
+  @override
+  List<Object> get props => [animes];
+}
+class AnimeRefresh extends AnimeEvent {}
+
+class SearchAnime extends AnimeEvent {
+  final List<Anime> animes;
+  final String str;
+
+  const SearchAnime({this.animes = const <Anime>[], required this.str});
+
+  @override
+  List<Object> get props => [animes];
 }

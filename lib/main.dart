@@ -8,26 +8,25 @@ void main() {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => AnimeBloc()..add(LoadAnimeList()),
-        ),
-      ],
-      child: MaterialApp(
-        title: appTitleString,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurpleAccent),
-          useMaterial3: true,
-        ),
-        debugShowCheckedModeBanner: false,
-        home: const HomePage(title: appTitleString),
+    return MaterialApp(
+      title: appTitleString,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurpleAccent),
+        useMaterial3: true,
+      ),
+      debugShowCheckedModeBanner: false,
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => AnimeBloc(),
+          ),
+        ],
+        child: HomePage(title: appTitleString),
       ),
     );
   }

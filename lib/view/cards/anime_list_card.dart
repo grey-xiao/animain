@@ -4,7 +4,6 @@ import 'package:animain/model/anime_model.dart';
 import 'package:animain/util/strings.dart';
 import 'package:animain/view/anime_page.dart';
 import 'package:animain/view/dialogs/delete_dialog.dart';
-//import 'package:animain/view/homePage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -42,9 +41,8 @@ class AnimeListCard extends StatelessWidget {
                               anime: animeUsed,
                               title: animeUsed.title,
                               callback: callback,
-                            )));
-                callback();
-                AnimeBloc().add(LoadAnimeList());
+                            ))
+                ).then((value) => callback());
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -114,7 +112,6 @@ class AnimeListCard extends StatelessWidget {
         builder: (context) {
           return DeleteDialog(
             anime: anime,
-            animeDB: animeDB,
             callback: callback,
             mode: 'single',
             onSubmit: (value) {},

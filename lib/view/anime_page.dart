@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:animain/bloc/anime_bloc.dart';
-import 'package:animain/controller/anime_controller.dart';
-import 'package:animain/controller/xml_query_controller.dart';
 import 'package:animain/model/anime_model.dart';
 import 'package:animain/util/strings.dart';
 import 'package:animain/view/dialogs/delete_dialog.dart';
@@ -26,10 +24,8 @@ class AnimePage extends StatefulWidget {
 
 class _AnimePageState extends State<AnimePage> {
   int value = 0;
-  Anime updatedAnime = Anime(id: 0, title: '', description: '', episodes: 0);
-  Anime displayedAnime = Anime(id: 0, title: '', description: '', episodes: 0);
-  final animeDB = AnimeController();
-  final xmlQuery = XMLQuery();
+  Anime updatedAnime = const Anime(id: 0, title: '', description: '', episodes: 0);
+  Anime displayedAnime = const Anime(id: 0, title: '', description: '', episodes: 0);
   final _globalKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
@@ -42,13 +38,6 @@ class _AnimePageState extends State<AnimePage> {
     super.initState();
   }
 
-  Future fetchAnime() async {
-    animeDB.queries = await xmlQuery.getQueriesFromXML(context);
-    updatedAnime = await animeDB.fetchById(displayedAnime.id!);
-    setState(() {
-      displayedAnime = updatedAnime;
-    });
-  }
 
   Future<Anime> futureAnime() async {
     return displayedAnime;
@@ -64,24 +53,11 @@ class _AnimePageState extends State<AnimePage> {
 
   showUpdateForm(
       BuildContext context, Anime anime, VoidCallback callback) async {
-    int success = 0;
     showDialog(
       context: context,
       builder: (_) => AnimeForm(
         anime: anime,
         callback: callback,
-        onSubmit: (animeUsed) async {
-          success = await animeDB.update(
-            id: anime.id!,
-            title: animeUsed[0],
-            description: animeUsed[1],
-            episodes: int.parse(animeUsed[2]),
-          );
-
-          if (!mounted) return;
-          showMessage(success);
-          Navigator.of(context).pop();
-        },
       ),
     );
   }
@@ -93,7 +69,6 @@ class _AnimePageState extends State<AnimePage> {
         builder: (context) {
           return DeleteDialog(
             anime: anime,
-            animeDB: animeDB,
             callback: callback,
             mode: 'single',
             onSubmit: (value) {},
@@ -114,10 +89,8 @@ class _AnimePageState extends State<AnimePage> {
           });
       Timer(const Duration(milliseconds: 200), () {
         //Fetch Data before Render Refresh
-        fetchAnime();
         //Render Refresh
         setState(() {
-          //print("Page Updated");
         });
       });
       Navigator.of(context).pop();
@@ -176,7 +149,6 @@ class _AnimePageState extends State<AnimePage> {
               }
               if (state is AnimeLoaded) {
                 final anime = state.anime;
-                print('ANIME ID ${anime.id}');
                 return SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
