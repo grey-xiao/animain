@@ -12,8 +12,6 @@ class AnimeController {
 
   Future<String> loadQuery(String query) async{
     queries = await XMLQuery().getQueriesFromXML();
-    print('Loaded Query:');
-    print(queries[query]);
     return queries[query]!;
   }
 

@@ -18,12 +18,12 @@ class LoadAnimeList extends AnimeEvent {
 }
 
 class LoadAnime extends AnimeEvent {
-  final int? id;
+  final int id;
 
-  const LoadAnime({ this.id});
+  const LoadAnime({required this.id});
 
   @override
-  List<Object> get props => [id!];
+  List<Object> get props => [id];
 }
 
 
@@ -74,6 +74,25 @@ class SearchAnime extends AnimeEvent {
   final String str;
 
   const SearchAnime({this.animes = const <Anime>[], required this.str});
+
+  @override
+  List<Object> get props => [animes, str];
+}
+
+class SearchingAnime extends AnimeEvent {
+  final List<Anime> animes;
+  final String str;
+
+  const SearchingAnime({this.animes = const <Anime>[], this.str = ''});
+
+  @override
+  List<Object> get props => [animes];
+}
+class SearchAnimeToggle extends AnimeEvent {
+  final List<Anime> animes;
+
+
+  const SearchAnimeToggle({this.animes = const <Anime>[]});
 
   @override
   List<Object> get props => [animes];

@@ -11,12 +11,18 @@ final class AnimeLoading extends AnimeState {}
 
 class AnimeListLoaded extends AnimeState {
   final List<Anime> animes;
+  final bool searchMode;
   
-  const AnimeListLoaded({required this.animes});
+  const AnimeListLoaded({required this.animes, required this.searchMode});
 
   @override
-  List<Object> get props => [animes];
+  List<Object> get props => [animes, searchMode];
 }
+
+class AnimeSearching extends AnimeState {
+  
+}
+
 class AnimeSearchLoaded extends AnimeState {
   final List<Anime> animes;
   

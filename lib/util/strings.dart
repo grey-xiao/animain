@@ -18,7 +18,10 @@ const queryNames = [
 ];
 
 //SNACK BAR MESSAGES
+const addedMsgString = 'Added!';
+const updatedMsgString = 'Updated!';
 const successMsgString = 'Success!';
+const deleteMsgString = 'Deleted.';
 const failMsgString = 'Failed!';
 const dupeMsgString = 'That title already exists!';
 

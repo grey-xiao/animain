@@ -1,14 +1,9 @@
 import 'package:animain/bloc/anime_bloc.dart';
-import 'package:animain/controller/anime_controller.dart';
-import 'package:animain/controller/xml_query_controller.dart';
 import 'package:animain/util/strings.dart';
 import 'package:animain/view/cards/anime_list_card.dart';
 import 'package:animain/model/anime_model.dart';
-import 'package:animain/view/dialogs/delete_dialog.dart';
 import 'package:animain/view/forms/add_anime_form.dart';
-import 'package:animain/view/forms/edit_anime_form.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,24 +15,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final animeDB = AnimeController();
-  final xmlQuery = XMLQuery();
+  late AnimeBloc _animeBloc;
 
-  List<Anime> aniList = [];
-  List<Anime> viewableList = [];
-  final _controller = ScrollController();
   bool searchAction = false;
   bool noData = true;
   MaterialColor deleteButtonColor = Colors.red;
   final TextEditingController _searchController = TextEditingController();
+  // static bool _searchMode = false;
+  // static bool get searchMode => _searchMode;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AnimeBloc().add(LoadAnimeList());
-    });
-    //context.read<AnimeBloc>().add(LoadAnimeList());
+  }
+
+  @override
+  void didChangeDependencies() {
+    _animeBloc = AnimeBloc()..add(LoadAnimeList());
+    super.didChangeDependencies();
   }
 
   // void noDataCheck(List<Anime> list) {
@@ -69,108 +64,22 @@ class _HomePageState extends State<HomePage> {
   //   });
   // }
 
-  Future<bool> showDeletePrompt(BuildContext context, Anime? anime,
-      VoidCallback callback, String mode) async {
-    bool decision = false;
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return DeleteDialog(
-          anime: anime,
-          callback: callback,
-          mode: mode,
-          onSubmit: (value) {
-            if (mode == 'single') {
-              value ? decision = true : decision = false;
-            }
-          }
-        );
-      }
-    );
-    return decision;
-  }
-
-  Future<void> showAddForm(BuildContext context, VoidCallback callback) async {
-    showDialog(
-      context: context,
-      builder: (_) => AddAnimeForm(
-        callback: callback,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    
-    void refresh() {
-      AnimeBloc().add(LoadAnimeList());
-      // setState(() {
-        
-      // });
-    }
-
-    return BlocProvider(
-      create: (context) => AnimeBloc()..add(LoadAnimeList()),
-      child: BlocListener<AnimeBloc, AnimeState>(
-        listener: (context, state) {
-          // TODO: implement listener
-          // if (state is AnimeListLoaded) {}
-          if (state is AnimeLoaded) {
-            AnimeBloc().add(LoadAnimeList());
-          }
-        },
-        child: BlocBuilder<AnimeBloc, AnimeState>(
-          builder: (context, state) {
+    return BlocProvider.value(
+      value: _animeBloc,
+      child: BlocBuilder<AnimeBloc, AnimeState>(
+        builder: (context, state) {
+          if (state is AnimeListLoaded) {
+            print(state.searchMode);
+            bool searchMode = _animeBloc.searchMode;
             return Scaffold(
               appBar: AppBar(
-                leading: searchAction
-                    ? IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          size: 24,
-                        ),
-                        onPressed: () {
-                          // setState(() {
-                          //   searchAction = false;
-                          //   _searchController.clear();
-                          // });
-                        },
-                      )
-                    : const SizedBox(),
-                leadingWidth: searchAction ? 56 : 0,
+                leading: searchMode ? leadingContents() : const SizedBox(),
+                leadingWidth: searchMode ? 56 : 0,
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                title: Row(
-                  children: [
-                    searchAction
-                        ? Container(
-                            width: MediaQuery.of(context).size.width * 3 / 4,
-                            height: 40,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5)),
-                            child: Center(
-                              child: TextField(
-                                autofocus: true,
-                                controller: _searchController,
-                                onChanged: (value) {
-                                  context.read<AnimeBloc>().add(SearchAnime(str: _searchController.text));
-                                },
-                                decoration: InputDecoration(
-                                    suffixIcon: IconButton(
-                                      icon: const Icon(Icons.clear),
-                                      onPressed: () {
-                                        /* Clear the search field */
-                                        _searchController.clear();
-                                      },
-                                    ),
-                                    hintText: 'Search...',
-                                    border: InputBorder.none),
-                              ),
-                            ),
-                          )
-                        : Text(widget.title),
-                  ],
-                ),
-                actions: searchAction
+                title: titleContents(),
+                actions: searchMode
                     ? []
                     : [
                         IconButton(
@@ -179,43 +88,87 @@ class _HomePageState extends State<HomePage> {
                             size: 24,
                           ),
                           onPressed: () {
-                            // setState(() {
-                            //   searchAction = true;
-                            // });
+                            //_searchMode = !_searchMode;
+                            _animeBloc.add(const SearchAnimeToggle());
                           },
                         ),
                         IconButton(
                           icon: Icon(
                             Icons.delete_sweep_rounded,
-                            color: deleteButtonColor,
+                            color: _animeBloc.animes.isNotEmpty
+                                ? deleteButtonColor
+                                : Colors.grey,
                             size: 24,
                           ),
-                          onPressed: 
-                          // noData
-                          //     ? null
-                          //     : 
-                              () {
-                                  showDeletePrompt(
-                                      context, null, refresh, 'all');
-                                },
+                          onPressed: _animeBloc.animes.isNotEmpty
+                              ? () async {
+                                  await showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return deleteDialog(context);
+                                      });
+                                }
+                              : null,
                         ),
                       ],
               ),
-              body: BlocBuilder<AnimeBloc, AnimeState>(
-                builder: (context, state) {
-                  if (state is AnimeLoading) {
-                    return const CircularProgressIndicator();
-                  }
-                  else if (state is AnimeListLoaded) {
-                    List<Anime> animeList = state.animes;
-                    aniList = animeList;
-                    viewableList = animeList;
+              body: body(context),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (_) => BlocProvider.value(
+                      value: _animeBloc,
+                      child: const AddAnimeForm(),
+                    ),
+                  );
+                },
+                tooltip: 'Add New',
+                child: const Icon(Icons.add),
+              ),
+              resizeToAvoidBottomInset: true,
+            );
+          } else if (state is AnimeLoading) {
+            return Scaffold(
+                body: Center(child: const CircularProgressIndicator()));
+          } else if (state is AnimeSearching) {
+            return AppBar(
+              leading: leadingContents(),
+              leadingWidth: 56,
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              title: titleContents(),
+            );
+          } else {
+            print(state);
+            return Center(
+              child: Text(defaultErrorString),
+            );
+          }
+        },
+      ),
+    );
+  }
 
-                    return SafeArea(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            animeList.isEmpty
+  Widget body(BuildContext context) {
+    return BlocProvider.value(
+        value: _animeBloc,
+        child: BlocConsumer<AnimeBloc, AnimeState>(
+          listener: (context, state) {
+            if (state is AnimeListLoaded) {}
+          },
+          builder: (context, state) {
+            return BlocBuilder<AnimeBloc, AnimeState>(
+              builder: (context, state) {
+                if (state is AnimeLoading) {
+                  return const CircularProgressIndicator();
+                } else if (state is AnimeListLoaded) {
+                  List<Anime> animeList = _animeBloc.animes;
+
+                  return SafeArea(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          animeList.isEmpty
                               ? const Center(
                                   child: Text(
                                     'No Data',
@@ -236,62 +189,166 @@ class _HomePageState extends State<HomePage> {
                                   //   return animeBloc.firstWhere((e) => e is! AnimeRefresh);
                                   // },
                                   child: ListView.builder(
-                                    controller: _controller,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
                                     scrollDirection: Axis.vertical,
                                     shrinkWrap: true,
-                                    itemCount: state.animes.length,
+                                    itemCount: animeList.length,
                                     itemBuilder: (context, index) {
-                                      final Anime anime = state.animes[index];
+                                      final Anime anime = animeList[index];
                                       //final Anime anime = animeList[index];
-                                      return Dismissible(
-                                        key: Key(anime.title),
-                                        confirmDismiss: (direction) =>
-                                            showDeletePrompt(context, anime,
-                                                refresh, 'single'),
-                                        onDismissed: (direction) {},
-                                        background: Container(
-                                          color: Colors.redAccent,
-                                        ),
-                                        child: Container(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 8.0),
-                                          decoration: const BoxDecoration(
-                                              border: BorderDirectional(
-                                                  bottom: BorderSide())),
-                                          child: AnimeListCard(
-                                            parentContext: context,
-                                            anime: anime,
-                                            callback: refresh,
-                                            animeDB: animeDB,
-                                          ),
+                                      return Container(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 8.0),
+                                        decoration: const BoxDecoration(
+                                            border: BorderDirectional(
+                                                bottom: BorderSide())),
+                                        child: AnimeListCard(
+                                          anime: anime,
+                                          animeBloc: _animeBloc,
                                         ),
                                       );
                                     },
                                   ),
                                 ),
-                            //)
-                          ],
-                        ),
+                        ],
                       ),
-                    );
-                  } else {
-                    return const Text(defaultErrorString);
-                  }
-                },
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () async {
-                  await showAddForm(context, refresh);
-                  AnimeBloc().add(LoadAnimeList());
-                },
-                tooltip: 'Add New',
-                child: const Icon(Icons.add),
-              ),
-              resizeToAvoidBottomInset: true,
+                    ),
+                  );
+                } else {
+                  return const Text(defaultErrorString);
+                }
+              },
             );
           },
+        ));
+  }
+
+  Widget titleContents() {
+    return BlocProvider.value(
+      value: _animeBloc,
+      child: BlocBuilder<AnimeBloc, AnimeState>(
+        builder: (context, state) {
+          if (state is AnimeListLoaded) {
+            return _animeBloc.searchMode
+                ? Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: TextField(
+                            autofocus: true,
+                            controller: _searchController,
+                            onChanged: (value) =>
+                                _animeBloc.add(SearchAnime(str: value)),
+                            decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                  },
+                                ),
+                                hintText: 'Search...',
+                                border: InputBorder.none),
+                          ),
+                        ),
+                      )
+                    ],
+                  )
+                : Text(appTitleString);
+          } else if (state is AnimeSearchLoaded) {
+            return Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: TextField(
+                      autofocus: true,
+                      controller: _searchController,
+                      onChanged: (value) =>
+                          _animeBloc.add(SearchAnime(str: value)),
+                      decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              /* Clear the search field */
+                              _searchController.clear();
+                            },
+                          ),
+                          hintText: 'Search...',
+                          border: InputBorder.none),
+                    ),
+                  ),
+                )
+              ],
+            );
+          } else {
+            return Center(
+              child: Text('NEITHER'),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget leadingContents() {
+    return BlocProvider.value(
+      value: _animeBloc,
+      child: IconButton(
+        icon: const Icon(
+          Icons.arrow_back,
+          size: 24,
+        ),
+        onPressed: () {
+          _searchController.text = '';
+          _animeBloc.add(const SearchAnimeToggle());
+        },
+      ),
+    );
+  }
+
+  Widget deleteDialog(BuildContext context) {
+    return AlertDialog(
+      actionsAlignment: MainAxisAlignment.spaceEvenly,
+      actions: [
+        TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text(
+              "Cancel",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            )),
+        TextButton(
+            onPressed: () {
+              _animeBloc.add(const DeleteAll());
+              Navigator.of(context).pop();
+            },
+            child: const Text(
+              "DELETE",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            )),
+      ],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(
+            20.0,
+          ),
+        ),
+      ),
+      contentPadding: const EdgeInsets.only(
+        top: 10.0,
+      ),
+      title: const Center(
+        child: Text(
+          "Delete all records?",
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 20.0),
         ),
       ),
     );

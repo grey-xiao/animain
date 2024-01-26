@@ -6,11 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EditAnimeForm extends StatefulWidget {
-  const EditAnimeForm(
-      {super.key, this.anime, required this.callback});
+  const EditAnimeForm({super.key, required this.anime});
 
-  final Anime? anime;
-  final VoidCallback callback;
+  final Anime anime;
 
   @override
   State<EditAnimeForm> createState() => _EditAnimeFormState();
@@ -21,208 +19,174 @@ class _EditAnimeFormState extends State<EditAnimeForm> {
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _epsController = TextEditingController();
   final formField = GlobalKey<FormState>();
-  Anime animeUsed = Anime(title: '', description: '', episodes: 0);
 
   @override
   void initState() {
     super.initState();
-    AnimeBloc().add(LoadAnime());
-    _titleController.text = widget.anime?.title ?? '';
-    _descController.text = widget.anime?.description ?? '';
-    _epsController.text = widget.anime?.episodes.toString() ?? '';
-  }
+    _titleController.text = widget.anime.title;
+    _descController.text = widget.anime.description;
+    _epsController.text = widget.anime.episodes.toString();
 
-  // void cleanForm() {
-  //   _titleController.clear();
-  //   _descController.clear();
-  //   _epsController.clear();
-  // }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.anime != null;
-    return BlocProvider(
-      create: (_) => AnimeBloc()..add(LoadAnime(id: widget.anime!.id)),
-      child: BlocListener<AnimeBloc, AnimeState>(
-        listener: (context, state) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(successMsgString),
-            showCloseIcon: true,
-          ));
-
-          if (state is AnimeLoaded) {
-            animeUsed = state.anime;
-          }
-        },
-        child: BlocBuilder<AnimeBloc, AnimeState>(
-          builder: (context, state) {
-            if (state is AnimeLoaded) {
-              return AlertDialog(
-                insetPadding: const EdgeInsets.all(24),
-                contentPadding: EdgeInsets.zero,
-                actionsAlignment: MainAxisAlignment.spaceEvenly,
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      if (formField.currentState!.validate()) {
-                        var anime = Anime(
-                            title: _titleController.value.text,
-                            description: _descController.value.text,
-                            episodes: int.parse(_epsController.value.text));
-                        print('ANIME ID: ${animeUsed.id}');
-                        isEditing
-                            ? context.read<AnimeBloc>().add(UpdateAnime(
-                                id: state.anime.id!,
-                                title: anime.title,
-                                description: anime.description,
-                                episodes: anime.episodes))
-                                
-
-                            : context.read<AnimeBloc>().add(AddAnime(
-                                title: anime.title,
-                                description: anime.description,
-                                episodes: anime.episodes));
-                      
-                        
-                        
-                        widget.callback();
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Text(
-                      "SAVE",
-                      style: TextStyle(
-                        color: Colors.deepPurpleAccent,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ],
-                title: Text(
-                  isEditing ? 'Edit ${widget.anime?.title}' : 'Add New Anime',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                content: SingleChildScrollView(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: SingleChildScrollView(
-                        //The Content of the Dialog
-                        child: Form(
-                          key: formField,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Title',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextFormField(
-                                  controller: _titleController,
-                                  decoration: const InputDecoration(
-                                    border: OutlineInputBorder(
-                                      gapPadding: 4,
-                                    ),
-                                  ),
-                                  validator: (value) =>
-                                      value != null && value.isEmpty
-                                          ? 'Title is required.'
-                                          : null,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                  )),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Description',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextFormField(
-                                  controller: _descController,
-                                  maxLines: 2,
-                                  decoration: const InputDecoration(
-                                    border: OutlineInputBorder(
-                                      gapPadding: 4,
-                                    ),
-                                  ),
-                                  validator: (value) =>
-                                      value != null && value.isEmpty
-                                          ? 'Description is required.'
-                                          : null,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                  )),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Episodes',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: 100,
-                                child: TextFormField(
-                                    controller: _epsController,
-                                    maxLength: 4,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: <TextInputFormatter>[
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      counterStyle: TextStyle(
-                                        height: double.minPositive,
-                                      ),
-                                      counterText: "",
-                                    ),
-                                    validator: (value) =>
-                                        value != null && value.isEmpty
-                                            ? 'Number of episodes is required.'
-                                            : null,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                    )),
-                              ),
-                            ],
-                          ),
+    return BlocListener<AnimeBloc, AnimeState>(
+      listener: (context, state) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(updatedMsgString),
+          showCloseIcon: true,
+        ));
+      },
+      child: AlertDialog(
+        insetPadding: const EdgeInsets.all(24),
+        contentPadding: EdgeInsets.zero,
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              if (formField.currentState!.validate()) {
+                var newDetails = Anime(
+                  title: _titleController.value.text,
+                  description: _descController.value.text,
+                  episodes: int.parse(_epsController.value.text)
+                );
+                context.read<AnimeBloc>().add(UpdateAnime(
+                  id: widget.anime.id!,
+                  title: newDetails.title,
+                  description: newDetails.description,
+                  episodes: newDetails.episodes));
+                Navigator.of(context).pop();
+                //context.read<AnimeBloc>().add(LoadAnimeList());
+              }
+            },
+            child: const Text(
+              "SAVE",
+              style: TextStyle(
+                color: Colors.deepPurpleAccent,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        ],
+        title: Text(
+          'Edit ${widget.anime.title}',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w400,
+            overflow: TextOverflow.ellipsis
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height / 3,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: SingleChildScrollView(
+                //The Content of the Dialog
+                child: Form(
+                  key: formField,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Title',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                          controller: _titleController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(
+                              gapPadding: 4,
+                            ),
+                          ),
+                          validator: (value) => value != null && value.isEmpty
+                              ? 'Title is required.'
+                              : null,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          )),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Description',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                          controller: _descController,
+                          maxLines: 2,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(
+                              gapPadding: 4,
+                            ),
+                          ),
+                          validator: (value) => value != null && value.isEmpty
+                              ? 'Description is required.'
+                              : null,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          )),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Episodes',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: 100,
+                        child: TextFormField(
+                            controller: _epsController,
+                            maxLength: 4,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              counterStyle: TextStyle(
+                                height: double.minPositive,
+                              ),
+                              counterText: "",
+                            ),
+                            validator: (value) =>
+                                value != null && value.isEmpty
+                                    ? 'Number of episodes is required.'
+                                    : null,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            )),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            } else {
-              return const Text(defaultErrorString);
-            }
-          },
+              ),
+            ),
+          ),
         ),
       ),
     );

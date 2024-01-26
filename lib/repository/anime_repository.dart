@@ -10,5 +10,5 @@ class AnimeRepository{
   Future update(int id, String title, String description, int episodes) => ac.update(id: id, title: title, description: description,  episodes: episodes);
   Future delete(int id) => ac.delete(id);
 
-  Future deleteAll(int id) => ac.deleteAll();
+  Future deleteAll() => ac.deleteAll();
 }
