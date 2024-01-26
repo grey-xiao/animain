@@ -21,8 +21,6 @@ class _HomePageState extends State<HomePage> {
   bool noData = true;
   MaterialColor deleteButtonColor = Colors.red;
   final TextEditingController _searchController = TextEditingController();
-  // static bool _searchMode = false;
-  // static bool get searchMode => _searchMode;
 
   @override
   void initState() {
@@ -34,35 +32,6 @@ class _HomePageState extends State<HomePage> {
     _animeBloc = AnimeBloc()..add(LoadAnimeList());
     super.didChangeDependencies();
   }
-
-  // void noDataCheck(List<Anime> list) {
-  //   if (list.isEmpty) {
-  //     setState(() {
-  //       noData = true;
-  //       deleteButtonColor = Colors.grey;
-  //     });
-  //   } else {
-  //     setState(() {
-  //       noData = false;
-  //       deleteButtonColor = Colors.red;
-  //     });
-  //   }
-  // }
-
-  // Future onSearchTextChanged(String text) async {
-  //   setState(() {
-  //     viewableList = [];
-  //     if (text.isNotEmpty) {
-  //       for (int i = 0; i < aniList.length; i++) {
-  //         if (aniList[i].title.toLowerCase().contains(text.toLowerCase())) {
-  //           viewableList.add(aniList[i]);
-  //         }
-  //       }
-  //     } else {
-  //       viewableList = aniList;
-  //     }
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +57,6 @@ class _HomePageState extends State<HomePage> {
                             size: 24,
                           ),
                           onPressed: () {
-                            //_searchMode = !_searchMode;
                             _animeBloc.add(const SearchAnimeToggle());
                           },
                         ),
@@ -231,31 +199,7 @@ class _HomePageState extends State<HomePage> {
         builder: (context, state) {
           if (state is AnimeListLoaded) {
             return _animeBloc.searchMode
-                ? Row(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: TextField(
-                            autofocus: true,
-                            controller: _searchController,
-                            onChanged: (value) =>
-                                _animeBloc.add(SearchAnime(str: value)),
-                            decoration: InputDecoration(
-                                suffixIcon: IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                  },
-                                ),
-                                hintText: 'Search...',
-                                border: InputBorder.none),
-                          ),
-                        ),
-                      )
-                    ],
-                  )
-                : Text(appTitleString);
-          } else if (state is AnimeSearchLoaded) {
-            return Row(
+            ? Row(
               children: [
                 Expanded(
                   child: Center(
@@ -268,8 +212,9 @@ class _HomePageState extends State<HomePage> {
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.clear),
                             onPressed: () {
-                              /* Clear the search field */
-                              _searchController.clear();
+                              _searchController.text = '';
+                              _animeBloc.add(SearchAnime(str: _searchController.text));
+
                             },
                           ),
                           hintText: 'Search...',
@@ -278,8 +223,10 @@ class _HomePageState extends State<HomePage> {
                   ),
                 )
               ],
-            );
-          } else {
+            )
+            : Text(appTitleString);
+          } 
+          else {
             return Center(
               child: Text('NEITHER'),
             );

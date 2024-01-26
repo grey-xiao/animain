@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:animain/bloc/anime_bloc.dart';
 import 'package:animain/model/anime_model.dart';
 import 'package:animain/util/strings.dart';
@@ -30,58 +28,9 @@ class _AnimePageState extends State<AnimePage> {
     super.initState();
   }
 
-  // Future<Anime> futureAnime() async {
-  //   return displayedAnime;
-  // }
-
-  // showMessage(int result) {
-  //   SnackBar msg = SnackBar(
-  //     content: Text(result != 0 ? successMsgString : dupeMsgString),
-  //     showCloseIcon: true,
-  //   );
-  // }
-
-  // showUpdateForm(
-  //     BuildContext context, Anime anime, VoidCallback callback) async {
-  //   showDialog(
-  //     context: context,
-  //     builder: (_) => EditAnimeForm(
-  //       anime: anime,
-  //       callback: callback,
-  //     ),
-  //   );
-  // }
-
-  // showDeletePrompt(BuildContext context, Anime anime) async {
-  //   showDialog(
-  //       context: context,
-  //       builder: (context) {
-  //         return DeleteDialog(
-  //           anime: anime,
-  //           mode: 'single',
-  //           onSubmit: (value) {},
-  //         );
-  //       });
-  // }
 
   @override
   Widget build(BuildContext context) {
-    // void refresh() {
-    //   showDialog(
-    //       barrierDismissible: false,
-    //       context: context,
-    //       builder: (context) {
-    //         return const Center(
-    //           child: CircularProgressIndicator(),
-    //         );
-    //       });
-    //   Timer(const Duration(milliseconds: 200), () {
-    //     //Fetch Data before Render Refresh
-    //     //Render Refresh
-    //     setState(() {});
-    //   });
-    //   Navigator.of(context).pop();
-    // }
 
     return BlocProvider.value(
         value: widget.animeBloc..add(LoadAnime(id: widget.anime.id!)),

@@ -67,7 +67,6 @@ class _EditAnimeFormState extends State<EditAnimeForm> {
                   description: newDetails.description,
                   episodes: newDetails.episodes));
                 Navigator.of(context).pop();
-                //context.read<AnimeBloc>().add(LoadAnimeList());
               }
             },
             child: const Text(

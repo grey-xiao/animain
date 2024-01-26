@@ -40,8 +40,3 @@ class AnimeLoaded extends AnimeState {
   @override
   List<Object> get props => [anime];
 }
-
-
-class AnimeRefreshing extends AnimeState {
-  
-}

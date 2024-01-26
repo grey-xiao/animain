@@ -10,10 +10,11 @@ part 'anime_state.dart';
 class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
   static List<Anime> _animes = [];
   List<Anime> get animes => _animes;
-  final animeRepo = AnimeRepository();
   static bool _searchMode = false;
   bool get searchMode => _searchMode;
-  
+
+  final animeRepo = AnimeRepository();
+
 
   AnimeBloc() : super(AnimeLoading()) {
     on<LoadAnimeList>(_onLoadAnimeList);
@@ -28,13 +29,10 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
 
   Future<void> _onSearchAnimeToggle(event, emit) async{
     _searchMode = !searchMode;
-    //print(searchMode);
-    //emit(AnimeLoading());
     emit(AnimeListLoaded(animes: animes, searchMode: _searchMode));
   }
 
   Future<void> dispose() async {
-    // Perform cleanup or close all created streams.
     await close();
   }
   
@@ -50,18 +48,21 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
   }
   
   Future<void> _onSearchAnime(event, emit) async {
-    //final state = this.state;
-    _animes = await animeRepo.fetchAll();
-    _animes = animes.where((element) {
-      return element.title.toLowerCase().contains(event.str.toLowerCase());
-    },).toList();
-
-    emit(AnimeListLoaded(animes: animes, searchMode: searchMode));
+    try {
+      _animes = await animeRepo.fetchAll();
+      _animes = animes.where((element) {
+        return element.title.toLowerCase().contains(event.str.toLowerCase());
+      },).toList();
+      
+      emit(AnimeListLoaded(animes: animes, searchMode: searchMode));
+    } on Exception catch (e) {
+      log(e.toString());
+    }
   }
 
   void _onLoadAnime(LoadAnime event, Emitter<AnimeState> emit) async {
-    final anime = await animeRepo.fetchById(event.id);
     try {
+      final anime = await animeRepo.fetchById(event.id);
       emit(AnimeLoaded(anime: anime));
     } on Exception catch (e) {
       log(e.toString());
@@ -75,11 +76,6 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
       final state = this.state;
       if(state is AnimeListLoaded){
         emit(AnimeListLoaded(animes: animes, searchMode: searchMode));
-        print(animes);
-        print('ANIMELISTLOADED STATE');
-      }
-      else{
-        print('$state STATE');
       }
     } on Exception catch (e) {
       log(e.toString());
@@ -87,20 +83,24 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
     
   }
   void _onUpdateAnime(event, emit) async {
-    await animeRepo.update(event.id, event.title, event.description, event.episodes);
-    final state = this.state;
-    
-    _animes = await animeRepo.fetchAll();
-    Anime anime = await animeRepo.fetchById(event.id);
-
-
-    if(state is AnimeLoaded){
+    try {
+      await animeRepo.update(event.id, event.title, event.description, event.episodes);
+      final state = this.state;
       
-      emit(AnimeLoaded(anime: anime));
-    }
-    else if(state is AnimeListLoaded){
-      emit(AnimeLoaded(anime: anime));
-      emit(AnimeListLoaded(animes: animes, searchMode: searchMode));
+      _animes = await animeRepo.fetchAll();
+      Anime anime = await animeRepo.fetchById(event.id);
+      
+      
+      if(state is AnimeLoaded){
+        
+        emit(AnimeLoaded(anime: anime));
+      }
+      else if(state is AnimeListLoaded){
+        emit(AnimeLoaded(anime: anime));
+        emit(AnimeListLoaded(animes: animes, searchMode: searchMode));
+      }
+    } on Exception catch (e) {
+      log(e.toString());
     }
   }
 
@@ -119,38 +119,15 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
   }
 
   Future<void> _onDeleteAll(event, emit) async {
-  await animeRepo.deleteAll();
-    final state  = this.state;
-    if(state is AnimeListLoaded){
-      print('ANIMELISTLOADED STATE and EVENT $event');
-      _animes = [];
-      emit(AnimeListLoaded(animes: animes, searchMode: searchMode));
-    }
-    else{
-      print('$state STATE and EVENT $event');
+    try {
+      await animeRepo.deleteAll();
+      final state  = this.state;
+      if(state is AnimeListLoaded){
+        _animes = [];
+        emit(AnimeListLoaded(animes: animes, searchMode: searchMode));
+      }
+    } on Exception catch (e) {
+      log(e.toString());
     }
   }
-  // on<AddAnime>((event, emit) {
-  //   // TODO: implement event handler
-  //   if(state is AnimeLoaded){
-  //     final state = this.state as AnimeLoaded;
-  //     emit(
-  //       AnimeLoaded(
-  //         animes: List.from(state.animes)..add(event.anime),
-  //       )
-  //     );
-  //   }
-  // });
-  // on<DeleteAnime>((event, emit) {
-  //   // TODO: implement event handler
-  //   if(state is AnimeLoaded){
-  //     final state = this.state as AnimeLoaded;
-  //     emit(
-  //       AnimeLoaded(
-  //         animes: List.from(state.animes)..remove(event.anime),
-  //       )
-  //     );
-  //   }
-  // });
-  
 }

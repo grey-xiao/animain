@@ -79,15 +79,6 @@ class SearchAnime extends AnimeEvent {
   List<Object> get props => [animes, str];
 }
 
-class SearchingAnime extends AnimeEvent {
-  final List<Anime> animes;
-  final String str;
-
-  const SearchingAnime({this.animes = const <Anime>[], this.str = ''});
-
-  @override
-  List<Object> get props => [animes];
-}
 class SearchAnimeToggle extends AnimeEvent {
   final List<Anime> animes;
 
