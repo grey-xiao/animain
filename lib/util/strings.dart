@@ -22,6 +22,7 @@ const addedMsgString = 'Added!';
 const updatedMsgString = 'Updated!';
 const successMsgString = 'Success!';
 const deleteMsgString = 'Deleted.';
+const refreshMsgString = 'Refreshed!';
 const failMsgString = 'Failed!';
 const dupeMsgString = 'That title already exists!';
 

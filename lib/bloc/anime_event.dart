@@ -67,7 +67,15 @@ class DeleteAll extends AnimeEvent {
   @override
   List<Object> get props => [animes];
 }
-class AnimeRefresh extends AnimeEvent {}
+class RefreshAnime extends AnimeEvent {
+  final List<Anime>? animes;
+
+
+    const RefreshAnime({this.animes});
+
+    @override
+    List<Object> get props => [animes!];
+}
 
 class SearchAnime extends AnimeEvent {
   final List<Anime> animes;

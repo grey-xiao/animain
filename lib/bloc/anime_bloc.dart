@@ -25,6 +25,7 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
     on<UpdateAnime>(_onUpdateAnime);
     on<DeleteAnime>(_onDeleteAnime);
     on<DeleteAll>(_onDeleteAll);
+    on<RefreshAnime>(_onRefreshAnime);
   }
 
   Future<void> _onSearchAnimeToggle(event, emit) async{
@@ -130,4 +131,16 @@ class AnimeBloc extends Bloc<AnimeEvent, AnimeState> {
       log(e.toString());
     }
   }
+  Future<void> _onRefreshAnime(event, emit) async {
+    emit(AnimeLoading());
+    try {
+      _animes = await animeRepo.fetchAll();
+      emit(
+        AnimeListLoaded(animes: animes, searchMode: searchMode)
+      );      
+    } on Exception catch (e) {
+      log(e.toString());
+    }
+  }
+  
 }

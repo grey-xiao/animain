@@ -28,71 +28,70 @@ class _AnimePageState extends State<AnimePage> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     return BlocProvider.value(
-        value: widget.animeBloc..add(LoadAnime(id: widget.anime.id!)),
-        child: BlocBuilder<AnimeBloc, AnimeState>(
-          builder: (context, state) {
-            return Scaffold(
-              appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                title: const Text('Information'),
-                actions: [
-                  PopupMenuButton<int>(
-                      // Callback that sets the selected popup menu item.
-                      onSelected: (int item) async {
-                        switch (item) {
-                          case 1:
-                            await showDialog(
-                              context: context,
-                              builder: (_) => BlocProvider.value(
-                                value: widget.animeBloc,
-                                child: EditAnimeForm(anime: widget.anime,),
-                              ),
-                            );
-                            break;
-                          case 2:
-                            await showDialog(
-                              context: context,
-                              builder: (_) => BlocProvider.value(
-                                value: widget.animeBloc,
-                                child: deleteDialog(context),
-                              ),
-                            );
-                        }
-                      },
-                      itemBuilder: (buildContext) => <PopupMenuEntry<int>>[
-                            const PopupMenuItem(
-                              value: 1,
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
+      value: widget.animeBloc..add(LoadAnime(id: widget.anime.id!)),
+      child: BlocBuilder<AnimeBloc, AnimeState>(
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              title: const Text('Information'),
+              actions: [
+                PopupMenuButton<int>(
+                  onSelected: (int item) async {
+                    switch (item) {
+                      case 1:
+                        await showDialog(
+                          context: context,
+                          builder: (_) => BlocProvider.value(
+                            value: widget.animeBloc,
+                            child: EditAnimeForm(
+                              anime: widget.anime,
                             ),
-                            const PopupMenuItem(
-                              value: 2,
-                              child: Text(
-                                'Delete',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.redAccent,
-                                ),
-                              ),
-                            ),
-                          ]),
-                ],
-              ),
-              body: body(context),
-            );
-          },
-        ));
+                          ),
+                        );
+                        break;
+                      case 2:
+                        await showDialog(
+                          context: context,
+                          builder: (_) => BlocProvider.value(
+                            value: widget.animeBloc,
+                            child: deleteDialog(context),
+                          ),
+                        );
+                    }
+                  },
+                  itemBuilder: (buildContext) => <PopupMenuEntry<int>>[
+                    const PopupMenuItem(
+                      value: 1,
+                      child: Text(
+                        'Edit',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 2,
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ),
+                  ]),
+            ],
+            ),
+            body: body(context),
+          );
+        },
+      ));
   }
 
   Widget body(BuildContext context) {
@@ -141,7 +140,7 @@ class _AnimePageState extends State<AnimePage> {
             ),
           );
         } else {
-          return SafeArea(child: Center(child: const Text(defaultErrorString)));
+          return const SafeArea(child:  Center(child: Text(defaultErrorString)));
         }
       },
     );

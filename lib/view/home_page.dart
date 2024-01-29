@@ -2,6 +2,7 @@ import 'package:animain/bloc/anime_bloc.dart';
 import 'package:animain/util/strings.dart';
 import 'package:animain/view/cards/anime_list_card.dart';
 import 'package:animain/model/anime_model.dart';
+import 'package:animain/view/dialogs/delete_dialog.dart';
 import 'package:animain/view/forms/add_anime_form.dart';
 import 'package:flutter/material.dart';
 
@@ -29,7 +30,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void didChangeDependencies() {
-    _animeBloc = AnimeBloc()..add(LoadAnimeList());
+    _animeBloc = AnimeBloc()..add(const LoadAnimeList());
     super.didChangeDependencies();
   }
 
@@ -40,7 +41,6 @@ class _HomePageState extends State<HomePage> {
       child: BlocBuilder<AnimeBloc, AnimeState>(
         builder: (context, state) {
           if (state is AnimeListLoaded) {
-            print(state.searchMode);
             bool searchMode = _animeBloc.searchMode;
             return Scaffold(
               appBar: AppBar(
@@ -97,8 +97,8 @@ class _HomePageState extends State<HomePage> {
               resizeToAvoidBottomInset: true,
             );
           } else if (state is AnimeLoading) {
-            return Scaffold(
-                body: Center(child: const CircularProgressIndicator()));
+            return const Scaffold(
+                body: Center(child: CircularProgressIndicator()));
           } else if (state is AnimeSearching) {
             return AppBar(
               leading: leadingContents(),
@@ -107,9 +107,10 @@ class _HomePageState extends State<HomePage> {
               title: titleContents(),
             );
           } else {
-            print(state);
-            return Center(
-              child: Text(defaultErrorString),
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           }
         },
@@ -122,7 +123,12 @@ class _HomePageState extends State<HomePage> {
         value: _animeBloc,
         child: BlocConsumer<AnimeBloc, AnimeState>(
           listener: (context, state) {
-            if (state is AnimeListLoaded) {}
+            if (state is AnimeLoading) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text(refreshMsgString),
+                showCloseIcon: true,
+              ));
+            }
           },
           builder: (context, state) {
             return BlocBuilder<AnimeBloc, AnimeState>(
@@ -151,32 +157,42 @@ class _HomePageState extends State<HomePage> {
                                   height: MediaQuery.of(context).size.height *
                                       4 /
                                       5,
-                                  // child: RefreshIndicator(
-                                  // onRefresh: () {
-                                  //   final animeBloc = BlocProvider.of<AnimeBloc>(context)..add(AnimeRefresh());
-                                  //   return animeBloc.firstWhere((e) => e is! AnimeRefresh);
-                                  // },
-                                  child: ListView.builder(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 8),
-                                    scrollDirection: Axis.vertical,
-                                    shrinkWrap: true,
-                                    itemCount: animeList.length,
-                                    itemBuilder: (context, index) {
-                                      final Anime anime = animeList[index];
-                                      //final Anime anime = animeList[index];
-                                      return Container(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 8.0),
-                                        decoration: const BoxDecoration(
-                                            border: BorderDirectional(
-                                                bottom: BorderSide())),
-                                        child: AnimeListCard(
-                                          anime: anime,
-                                          animeBloc: _animeBloc,
-                                        ),
-                                      );
+                                  child: RefreshIndicator(
+                                    onRefresh: () async {
+                                      _animeBloc.add(const RefreshAnime());
+                                      animeList = _animeBloc.animes;
                                     },
+                                    child: ListView.builder(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      scrollDirection: Axis.vertical,
+                                      shrinkWrap: true,
+                                      itemCount: animeList.length,
+                                      itemBuilder: (context, index) {
+                                        final Anime anime = animeList[index];
+                                        //final Anime anime = animeList[index];
+                                        return Container(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          decoration: const BoxDecoration(
+                                              border: BorderDirectional(
+                                                  bottom: BorderSide())),
+                                          child: Dismissible(
+                                            key: Key(anime.title),
+                                            confirmDismiss: (direction) =>
+                                                showDeleteDialog(true, anime),
+                                            onDismissed: (direction) {},
+                                            background: Container(
+                                              color: Colors.redAccent,
+                                            ),
+                                            child: AnimeListCard(
+                                              anime: anime,
+                                              animeBloc: _animeBloc,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
                         ],
@@ -199,35 +215,34 @@ class _HomePageState extends State<HomePage> {
         builder: (context, state) {
           if (state is AnimeListLoaded) {
             return _animeBloc.searchMode
-            ? Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: TextField(
-                      autofocus: true,
-                      controller: _searchController,
-                      onChanged: (value) =>
-                          _animeBloc.add(SearchAnime(str: value)),
-                      decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.text = '';
-                              _animeBloc.add(SearchAnime(str: _searchController.text));
-
-                            },
+                ? Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: TextField(
+                            autofocus: true,
+                            controller: _searchController,
+                            onChanged: (value) =>
+                                _animeBloc.add(SearchAnime(str: value)),
+                            decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    _searchController.text = '';
+                                    _animeBloc.add(SearchAnime(
+                                        str: _searchController.text));
+                                  },
+                                ),
+                                hintText: 'Search...',
+                                border: InputBorder.none),
                           ),
-                          hintText: 'Search...',
-                          border: InputBorder.none),
-                    ),
-                  ),
-                )
-              ],
-            )
-            : Text(appTitleString);
-          } 
-          else {
-            return Center(
+                        ),
+                      )
+                    ],
+                  )
+                : const Text(appTitleString);
+          } else {
+            return const Center(
               child: Text('NEITHER'),
             );
           }
@@ -299,5 +314,24 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  Future<bool> showDeleteDialog(bool single, Anime anime) async {
+    bool result = false;
+    await showDialog(
+        context: context,
+        builder: (context) {
+          return BlocProvider.value(
+            value: _animeBloc,
+            child: DeleteDialog(
+                single: true,
+                anime: anime,
+                animeBloc: _animeBloc,
+                onSubmit: (value) async {
+                  result = value;
+                }),
+          );
+        });
+    return result;
   }
 }
